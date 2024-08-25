@@ -17,7 +17,29 @@ public class DistroController {
 	public void exibeDistro() {
 		String osName = os().toLowerCase();
 		if (osName.contains("linux")) {
-			readProcess("cat /etc/os-release");
+			try {
+				Process p = Runtime.getRuntime().exec("cat /etc/os-release".split(" "));
+				InputStream fluxo = p.getInputStream();
+				InputStreamReader leitor = new InputStreamReader(fluxo);
+				BufferedReader buffer = new BufferedReader(leitor);
+				String linha = buffer.readLine();
+				while (linha != null) {
+					if (linha.contains("NAME") && !linha.contains("PRETTY")) {
+						String[] nomeArr = linha.split("\"");
+						System.out.print(nomeArr[1]);
+					} else if (linha.contains("VERSION=")) {
+						String[] versaoArr = linha.split("\"");
+						System.out.print(" - " + versaoArr[1] + "\n");
+						break;
+					}
+					linha = buffer.readLine();
+				}
+				buffer.close();
+				leitor.close();
+				fluxo.close();
+			} catch (Exception e) {
+				System.err.println(e.getMessage());
+			}
 		} else {
 			System.out.println("Sistema operacional inválido");
 		}
